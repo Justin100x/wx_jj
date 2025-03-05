@@ -5,6 +5,8 @@ from wxcloudrun.dao import delete_counterbyid, query_counterbyid, insert_counter
 from wxcloudrun.model import Counters
 from wxcloudrun.response import make_succ_empty_response, make_succ_response, make_err_response
 
+import hashlib
+from flask import request, jsonify
 
 @app.route('/')
 def index():
@@ -13,6 +15,30 @@ def index():
     """
     return render_template('index.html')
 
+import hashlib
+from flask import request, jsonify
+
+@app.route('/wechat', methods=['GET'])
+def weixin():
+    if request.method == 'GET':
+        token = 'MyToken'  # 替换为你自己的token
+        signature = request.args.get('signature')
+        timestamp = request.args.get('timestamp')
+        nonce = request.args.get('nonce')
+        echostr = request.args.get('echostr')
+
+        # 将token、timestamp、nonce三个参数进行字典排序并拼接
+        data = [token, timestamp, nonce]
+        data.sort()
+        hash_str = ''.join(data).encode('utf-8')
+        signature_calculated = hashlib.sha1(hash_str).hexdigest()
+
+        # 判断signature是否相同，若相同则返回echostr
+        if signature == signature_calculated:
+            return echostr
+        else:
+            return 'Invalid signature', 400
+        # return echostr
 
 @app.route('/api/count', methods=['POST'])
 def count():
